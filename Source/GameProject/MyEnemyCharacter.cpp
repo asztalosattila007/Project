@@ -11,6 +11,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Components/SceneComponent.h"
+
 #include "GameFramework/Controller.h"
 #include "Camera/CameraComponent.h"
 
@@ -23,6 +25,9 @@
 
 AMyEnemyCharacter::AMyEnemyCharacter()
 {
+
+	
+
 	// Use only Yaw from the controller and ignore the rest of the rotation.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
@@ -31,6 +36,29 @@ AMyEnemyCharacter::AMyEnemyCharacter()
 	// Set the size of our collision capsule.
 	GetCapsuleComponent()->SetCapsuleHalfHeight(96.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(40.0f);
+
+
+
+	//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	//GetCapsuleComponent()->SetupAttachment(RootComponent);
+
+	EnemyBoxCol = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
+	EnemyBoxCol->SetBoxExtent(FVector(62.f, 102.f, 40.f));
+	EnemyBoxCol->SetCollisionProfileName("Trigger");
+	//EnemyBoxCol->SetComponent(this);
+	//EnemyBoxCol->bEditableWhenInherited = true;
+	EnemyBoxCol->AttachTo(RootComponent);
+	
+	//EnemyBoxCol = RootComponent;
+	//RootComponent = EnemyBoxCol;
+
+	PlayerDetect = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
+	PlayerDetect->InitSphereRadius(400.f);
+	PlayerDetect->SetCollisionProfileName("Eyesight");
+	PlayerDetect->AttachTo(RootComponent);
+	//PlayerDetect = RootComponent;
+	//RootComponent = PlayerDetect;
+
 
 
 	// Prevent all automatic rotation behavior on the camera, character, and camera component
@@ -65,6 +93,11 @@ AMyEnemyCharacter::AMyEnemyCharacter()
 
 
 	isattack = false; //támadás alap érték
+
+	isdead = false;
+	isdamaged = false;
+
+	enemyHealth = 1.0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,9 +108,18 @@ void AMyEnemyCharacter::UpdateAnimation()
 	const FVector PlayerVelocity = GetVelocity();
 	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
+	IsDead();   //ellenõrzi hogy van e még életerõ,ha nincs a isdead értékét true-ra állítja
+
 	// Are we moving or standing still?
 	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? RunningAnimation : IdleAnimation;
-	if (isattack == true) {
+	if (isdead == true) {
+		GetSprite()->SetFlipbook(DeathAnimation);
+		
+	}
+	else if (isdamaged == true) {
+		GetSprite()->SetFlipbook(HitAnimation);
+	}
+	else if (isattack == true) {
 		GetSprite()->SetFlipbook(AttackAnimation);
 	}
 	else if (GetSprite()->GetFlipbook() != DesiredAnimation)
@@ -108,17 +150,18 @@ void AMyEnemyCharacter::Tick(float DeltaSeconds)
 
 
 
-void AMyEnemyCharacter::Attack()
-{
-	//támadás animáció lejátszás
-	//érzékeljen minden ellenfélt a támadás sugarában.
-	//És sebezze meg azokat.
-	isattack = true;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Tamadas!"));
-	GetWorld()->GetTimerManager().SetTimer(AttackTimeHandle, [&]() {isattack = false; }, 0.5f, false);
-
-
-}
+//void AMyEnemyCharacter::Attack()
+//{
+//	//támadás animáció lejátszás
+//	//érzékeljen minden ellenfélt a támadás sugarában.
+//	//És sebezze meg azokat.
+//	isattack = true;
+//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Tamadas!"));
+//	GetWorld()->GetTimerManager().SetTimer(AttackTimeHandle, [&]() {isattack = false; }, 0.5f, false);
+//	
+//
+//
+//}
 
 void AMyEnemyCharacter::UpdateCharacter()
 {
@@ -139,6 +182,13 @@ void AMyEnemyCharacter::UpdateCharacter()
 		{
 			Controller->SetControlRotation(FRotator(0.0f, 0.0f, 0.0f));
 		}
+	}
+}
+
+void AMyEnemyCharacter::IsDead()
+{
+	if (enemyHealth <= 0.0) {
+		isdead = true;
 	}
 }
 

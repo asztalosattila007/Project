@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "PaperCharacter.h"
+#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
+
 #include "MyEnemyCharacter.generated.h"
 
 /**
@@ -16,7 +19,6 @@ class GAMEPROJECT_API AMyEnemyCharacter : public APaperCharacter
 {
 	GENERATED_BODY()
 
-	
 
 	virtual void Tick(float DeltaSeconds) override;
 protected:
@@ -43,19 +45,39 @@ protected:
 	//halál animáció (flipbook)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 		class UPaperFlipbook* DeathAnimation;
+	
+	
+	
+	//játékos sebzés
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Attackplayer)
+		class UBoxComponent* EnemyBoxCol;
+	//játékos érzékelés
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Detectplayer)
+		class USphereComponent* PlayerDetect;
+	
+
+	
+
+	//EditAnywhere,VisibleAnywhere
 
 	/** Called to choose the correct animation to play based on the character's movement state */
 	void UpdateAnimation();
 
 	//Támadás
-	void Attack();
+	//void Attack();
 
 	void UpdateCharacter();
 
-	FTimerHandle AttackTimeHandle;
+	void IsDead(); //igaz ha az enemyhealth=0.0;
+	
 	bool isattack;
+	
+	
 
 public:
 	AMyEnemyCharacter();
-
+	bool isdamaged;
+	bool isdead;
+	FTimerHandle AttackTimeHandle;
+	float enemyHealth;
 };

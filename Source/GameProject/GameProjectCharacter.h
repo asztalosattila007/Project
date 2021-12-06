@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PaperCharacter.h"
+#include "MyEnemyCharacter.h"
 #include "GameProjectCharacter.generated.h"
 
 class UTextRenderComponent;
@@ -31,7 +32,12 @@ class AGameProjectCharacter : public APaperCharacter
 
 	UTextRenderComponent* TextComponent;
 	virtual void Tick(float DeltaSeconds) override;
+
 protected:
+	
+
+	virtual void BeginPlay() override;
+
 	// The animation to play while running around
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Animations)
 	class UPaperFlipbook* RunningAnimation;
@@ -48,6 +54,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* AttackAnimation;
 
+	//sérülés animáció (flipbook)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+		class UPaperFlipbook* HitAnimation;
+
+	//halál animáció (flipbook)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+		class UPaperFlipbook* DeathAnimation;
+
+
 	/** Called to choose the correct animation to play based on the character's movement state */
 	void UpdateAnimation();
 
@@ -59,6 +74,7 @@ protected:
 
 	void UpdateCharacter();
 
+
 	/** Handle touch inputs. */
 	void TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location);
 
@@ -69,8 +85,11 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
-	FTimerHandle AttackTimeHandle;
-	bool isattack;
+	
+
+
+	
+
 
 public:
 	AGameProjectCharacter();
@@ -79,4 +98,46 @@ public:
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	//Életerõ (alapértelmezett)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+		float baseHealth;
+
+	//Életerõ (jelenlegi)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+		float CurrentHealth;
+
+	//ellenség sebzés
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AttackEnemy)
+		class UBoxComponent* PlayerBoxCol;
+
+	/*UFUNCTION()
+		virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;*/
+
+	FTimerHandle AttackTimeHandle;
+	bool isattack;
+	bool isdamaged;
+	bool isdead;
+	bool canApplyDamage;
+
+	UPROPERTY(EditAnywhere, Category = "Class Types")
+		TSubclassOf<UUserWidget> HealthWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime")
+		class UHealthBar* HealthWidget;
+
+	UFUNCTION()
+		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	
+	//UFUNCTION()
+		//void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	void SetDeath();
+	
+	UPROPERTY(EditAnywhere, Category = "Class Types")
+		TSubclassOf<AMyEnemyCharacter> MyEnemyClass;
+	UPROPERTY(BlueprintReadOnly, Category = "Enemy")
+	AMyEnemyCharacter* MyEnemyCharacter;
+
 };

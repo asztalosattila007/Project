@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameProjectGameMode.generated.h"
 
+
+
 /**
  * The GameMode defines the game being played. It governs the game rules, scoring, what actors
  * are allowed to exist in this game type, and who may enter the game.
@@ -16,6 +18,15 @@ UCLASS(minimalapi)
 class AGameProjectGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+protected:
+
+	
 public:
 	AGameProjectGameMode();
+
+
+
+	
+
+	
 };
